@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-	<meta name="generator" content="Hugo 0.17" />
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="HandheldFriendly" content="True">
@@ -20,10 +19,10 @@
     <title>
       
       
-        Programming Muses
+         Reusing TCP connections 
       
     </title>
-    <link rel="canonical" href="https://lafolle.co/">
+    <link rel="canonical" href="https://lafolle.co/post/reusing-http-conns/">
 
     <style>
   * {
@@ -379,8 +378,6 @@
 
 
     
-      <link href="https://lafolle.co/index.xml" rel="alternate" type="application/rss+xml" title="Programming Muses" />
-    
   </head>
 
   <body>
@@ -393,20 +390,65 @@
 
 
 <section id=content>
-  <ul class=posts_listing>
+  <h1> Reusing TCP connections </h1>
+
+  <div id=sub-header>
+    March 2017 · 1 minute read
+  </div>
+
+  <div class="entry-content">
+    <p>HTTP is a protocol built on top of tcp.  Whenever we make an HTTP request, a new (maybe not) TCP connection is created and that TCP connection is used to send or receive data, to and from server.
+Each TCP connection consumes a file descriptor (fd).</p>
+
+<p>Let&rsquo;s look at a simple program which makes a GET request to HTTP server running on localhost.</p>
+
+<pre><code>package main
+
+import (
+    &quot;fmt&quot;
+    &quot;io&quot;
+    &quot;io/ioutil&quot;
+    &quot;net/http&quot;
+)
+
+func main() {
+    resp, err := http.Get(&quot;http://127.0.0.1:5678/hello&quot;)
+    if err != nil {
+        fmt.Println(&quot;get:err&quot;, err)
+        return
+    }
+	resp.Body.Close()
+}
+</code></pre>
+
+<p>We&rsquo;re doing a GET request to <code>http://localhost/hello</code>,  check if there was an error in sending the request,  and if no error is returned we simply close the Body.
+Now, lets look at the network syscalls made by our client.</p>
+
+<pre><code>lafolle@yoss:~/src/gihub.com/lafolle/play/httpconn$ strace -ff -e trace=connect ./httpconn
+strace: Process 11879 attached
+strace: Process 11880 attached
+strace: Process 11881 attached
+strace: Process 11882 attached
+[pid 11878] connect(3, {sa_family=AF_INET, sin_port=htons(5678), sin_addr=inet_addr(&quot;127.0.0.1&quot;)}, 16) = -1 EINPROGRESS (Operation now in progress)
+[pid 11882] +++ exited with 0 +++
+[pid 11881] +++ exited with 0 +++
+[pid 11880] +++ exited with 0 +++
+[pid 11879] +++ exited with 0 +++
++++ exited with 0 +++
+lafolle@yoss:~/src/gihub.com/lafolle/play/httpconn$
+</code></pre>
+
+  </div>
+
+  <div id=links>
     
-      <li>
-        <h2><a href="https://lafolle.co/post/reusing-http-conns/">Reusing TCP connections</a></h2>
-        <div id=date>
-          <time>March 2017</time>
-        </div>
-      </li>
     
-  </ul>
+  </div>
 </section>
 
   
 </body>
 </html>
+
 
 
