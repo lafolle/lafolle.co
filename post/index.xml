@@ -11,7 +11,7 @@
     <atom:link href="https://lafolle.co/post/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Reusing TCP connections</title>
+      <title>Reusing TCP connections for HTTP requests</title>
       <link>https://lafolle.co/post/reusing-http-conns/</link>
       <pubDate>Sun, 12 Mar 2017 22:30:00 +0530</pubDate>
       
